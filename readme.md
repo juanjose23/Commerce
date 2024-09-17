@@ -61,7 +61,7 @@ La aplicación incluye al menos los siguientes modelos además del modelo `User`
 
     ```bash
     git clone https://github.com/juanjose23/cocomer.git
-    cd sitio-subastas
+    cd cocomer
     ```
 
 2. **Instalar Dependencias**
