@@ -1,0 +1,151 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+
+        <div class="col-md-8">
+            <h1 class="mb-4">{{ listing.title }}</h1>
+            <div class="card mb-4">
+                <img src="{{ listing.image.url }}" class="card-img-top img-thumbnail" alt="{{ listing.title }}">
+                <span
+                class="position-absolute top-0 end-0 text-white px-2 py-1 m-2 rounded-pill">
+                {% if user.is_authenticated %}
+                {% if not listing.created_by or user != listing.created_by %}
+                    <!-- Toggle Watchlist Form -->
+                    <form method="post" action="{% url 'toggle_watchlist' listing.id %}">
+                        {% csrf_token %}
+                        {% if is_in_watchlist %}
+                            <button type="submit" class="btn btn-warning btn-sm me-2">
+                                <i class="bi bi-trash-fill"></i> Remove
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-success btn-sm me-2" title="Add to Watchlist">
+                                <i class="bi bi-heart"></i> Add
+                            </button>
+                        {% endif %}
+                    </form>
+               
+                {% endif %}
+            {% endif %}
+            </span>
+                <div class="card-body">
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text">{{ listing.description }}</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Category:</strong> {{ listing.category.name }}</li>
+                        <li class="list-group-item"><strong>Condition:</strong> {{ listing.get_status_display }}</li>
+                        <li class="list-group-item"><strong>Starting Bid:</strong> {{ listing.starting_bid }}</li>
+                        <li class="list-group-item"><strong>Creation Date:</strong> {{ listing.created_at }}</li>
+                    </ul>
+                   
+                </div>
+            </div>
+
+
+            <h2 class="mb-3">Comments</h2>
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% if comments %}
+                    {% for comment in comments %}
+                    <div class="mb-3">
+                        <h6 class="fw-bold">{{ comment.user.username }}</h6>
+                        <p class="text-muted small">{{ comment.created_at|date:"F j, Y" }}</p>
+                        <p>{{ comment.content }}</p>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p>No comments yet.</p>
+                    {% endif %}
+                    <!-- Debugging Line -->
+
+                </div>
+            </div>
+
+
+
+
+            <form class="mb-5" method="post" action="{% url 'create_comment' listing_id=listing.id %}">
+                {% csrf_token %}
+                <h3 class="mb-3">Leave a Comment</h3>
+
+                <div class="mb-3">
+                    <label for="commentText" class="form-label">Comment</label>
+                    <textarea class="form-control" id="commentText" name="content" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Comment</button>
+            </form>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Auction Information</h5>
+                    <p class="card-text">
+                        <strong>Current Price:</strong> ${{ listing.current_price }}<br>
+
+                    </p>
+                    <h6 class="mt-4">Bid History</h6>
+                    {% if listing.bids.all %}
+                    <ul class="list-group list-group-flush">
+                        {% for bid in listing.bids.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>{{ bid.bidder.username }}</strong>
+                            <span class="badge bg-primary rounded-pill">${{ bid.amount }}</span>
+                            <span class="text-muted">{{ bid.bid_time|date:"F j, Y, g:i a" }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No bids yet.</p>
+                    {% endif %}
+                    {% if winner_message %}
+                    <div class="alert alert-info">
+                        {{ winner_message }}
+                    </div>
+                    {% endif %}
+                
+                    
+                </div>
+            </div>
+
+
+            {% if listing.status == 1 %}
+            <div class="card">
+                <div class="card-body">
+                    {% if user %}
+                    {% if not listing.created_by or user != listing.created_by%}
+                   
+                    <h5 class="card-title">Place a Bid</h5>
+                    <form method="post" action="{% url 'create_bid' listing.id %}">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="bidAmount" class="form-label">Bid Amount ($)</label>
+                            <input type="number" name="amount" class="form-control" id="bidAmount" min="0" required>
+
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Place Bid</button>
+                    </form>
+                    
+                    {% else %}
+                    <!-- Botón para finalizar la subasta -->
+                    <h5 class="card-title">Auction Actions</h5>
+                    <form method="post" action="{% url 'finish_auction' listing.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger w-100">Finish Auction</button>
+                    </form>
+                    {% endif %}
+
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <h2 class="text-center mb-4">Create New Listing</h2>
+            {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <label for="title" class="form-label visually-hidden">Title</label>
+                            <input type="text" name="title" id="title" class="form-control form-control-lg" placeholder="Title" required>
+                            <div class="invalid-feedback">Please provide a title.</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="description" class="form-label visually-hidden">Description</label>
+                            <textarea name="description" id="description" class="form-control" rows="4" placeholder="Description" required></textarea>
+                            <div class="invalid-feedback">Please provide a description.</div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="starting_bid" class="form-label visually-hidden">Starting Bid</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="starting_bid" id="starting_bid" step="0.01" class="form-control" placeholder="Starting Bid" required>
+                                </div>
+                                <div class="invalid-feedback">Please provide a starting bid.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="category" class="form-label visually-hidden">Category</label>
+                                <select name="category" id="category" class="form-select" required>
+                                    <option value="" disabled selected>Select a category</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a category.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="image" class="form-label">Image</label>
+                            <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Create Listing</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    .card {
+        transition: all 0.3s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+{% endblock %}

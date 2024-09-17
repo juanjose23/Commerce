@@ -1,0 +1,130 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">Active Listings</h2>
+
+    <div class="row">
+        <!-- Filtros -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Filters</h5>
+                    <form method="get">
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select name="category" id="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for category in listcategories %}
+                                <option value="{{ category.id }}" {% if
+                                    request.GET.category|stringformat:"s"==category.id|stringformat:"s" %}selected{%
+                                    endif %}>
+                                    {{ category.name }}
+                                </option>
+
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="min_price" class="form-label">Min Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" name="min_price" id="min_price" class="form-control"
+                                    placeholder="0" value="{{ request.GET.min_price }}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="max_price" class="form-label">Max Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" name="max_price" id="max_price" class="form-control"
+                                    placeholder="1000" value="{{ request.GET.max_price }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listings -->
+        <div class="col-lg-9">
+            <div class="row g-4">
+                {% for listing in listings %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm hover-shadow transition-shadow">
+                        <!-- Product image-->
+                        <div class="position-relative">
+                            {% if listing.image %}
+                            <img class="card-img-top" src="{{ listing.image.url }}" alt="{{ listing.title }}">
+                            {% else %}
+                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg"
+                                alt="Default Image">
+                            {% endif %}
+                            <span
+                                class="position-absolute top-0 end-0 bg-primary text-white px-2 py-1 m-2 rounded-pill">
+                                {{ listing.category.name }}
+                            </span>
+                        </div>
+                        <!-- Product details-->
+                        <div class="card-body p-4">
+                            <h5 class="card-title text-primary mb-2">{{ listing.title }}</h5>
+                            <p class="card-text text-muted mb-2">Starting Bid:
+                                <span class="fw-bold text-success">
+                                    ${{listing.starting_bid }}
+                                </span>
+                            </p>
+                            <p class="card-text small text-muted">
+                                <i class="bi bi-clock me-1"></i> Ends in: 2 days
+                            </p>
+                        </div>
+                        <!-- Product actions-->
+                        <div class="card-footer p-4 pt-0 border-top-0 bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <!-- View Details Button -->
+                                <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'listing_detail' slug=listing.slug %}">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                        
+                                {% if user.is_authenticated %}
+                                    {% if not listing.created_by or user != listing.created_by %}
+                                        <!-- Toggle Watchlist Form -->
+                                        <form method="post" action="{% url 'toggle_watchlist' listing.id %}">
+                                            {% csrf_token %}
+                                            {% if listing.id in watchlist %}
+                                                <button type="submit" class="btn btn-outline-warning btn-sm me-2">
+                                                    <i class="bi bi-trash-fill"></i> Remove
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm me-2" title="Add to Watchlist">
+                                                    <i class="bi bi-heart"></i> Add
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    {% else %}
+                                        <!-- Finish Auction Form -->
+                                        <form method="post" action="{% url 'finish_auction' listing.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="bi bi-check-circle"></i> Finish
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center" role="alert">
+                        No active listings available.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
